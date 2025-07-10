@@ -9,5 +9,8 @@ name = "py_rust"
 crate-type = ["cdylib"]
 
 [dependencies]
+grep = "0.3.2"
 ignore = "0.4.23"
+itertools = "0.14.0"
 pyo3 = "0.25.0"
+thiserror = "2.0.12"
