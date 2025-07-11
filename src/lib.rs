@@ -133,31 +133,16 @@ impl Sink for ResultsSink {
 /// find.add_search("some string part", ignore_case=True)
 /// # ?? async behavior?
 /// files = await find.run()
-#[derive(Clone)]
-struct Needle {
-    data: String,
-    matcher: RegexMatcher,
-}
 
 struct FinderInner {
     dirs: Vec<String>,
-    searches: Vec<Needle>,
+    searches: Vec<RegexMatcher>,
 }
 
 #[pyclass]
 struct Finder {
     dirs: Vec<String>,
-    searches: Vec<Needle>,
-}
-
-impl Needle {
-    fn new(data: String) -> FinderResult<Self> {
-        let matcher = RegexMatcher::new_line_matcher(&data)?;
-        Ok(Self {
-            data: data,
-            matcher: matcher,
-        })
-    }
+    searches: Vec<RegexMatcher>,
 }
 
 fn is_dir(d: &DirEntry) -> bool {
@@ -186,7 +171,7 @@ fn find_files_without_match(walker: Walk, results: &mut Results)
 }
 
 impl FinderInner {
-    fn new(paths: &Vec<String>, searches: &Vec<Needle>) -> Self {
+    fn new(paths: &Vec<String>, searches: &Vec<RegexMatcher>) -> Self {
         Self {
             dirs: paths.clone(),
             searches: searches.clone(),
@@ -234,7 +219,7 @@ impl FinderInner {
                 let mut sink = ResultsSink::new(file.path());
                 for matcher in &self.searches {
                     let result = searcher.search_path(
-                        &matcher.matcher,
+                        &matcher,
                         file.path(),
                         &mut sink,
                     );
@@ -262,8 +247,12 @@ impl Finder {
     }
 
     #[pyo3(text_signature = "(search : String)")]
-    pub fn add_regex(&mut self, search: String) -> PyResult<usize> {
-        self.searches.push(Needle::new(search)?);
+    pub fn add_regex(&mut self, search: &str) -> PyResult<usize> {
+        let matcher = match RegexMatcher::new_line_matcher(search) {
+            Ok(m) => m,
+            Err(e) => { return Err(FinderError::Grep(e).into()); }
+        };
+        self.searches.push(matcher);
         Ok(self.searches.len())
     }
 
@@ -334,7 +323,7 @@ fn skip_git(d: &DirEntry) -> bool
 
 /// A Python module implemented in Rust.
 #[pymodule]
-fn py_rust(m: &Bound<'_, PyModule>) -> PyResult<()> {
+fn py_ripgrep(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<Finder>()?;
     m.add_class::<Match>()?;
     Ok(())

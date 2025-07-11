@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 from typing import List
 
-from .py_rust import Finder, Match
+from .py_ripgrep import Finder, Match
 
 def find_files(p: Path) -> List[str]:
     finder = Finder([os.path.expanduser(p)])

@@ -276,17 +276,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "py-rust"
-version = "0.1.0"
-dependencies = [
- "grep",
- "ignore",
- "itertools",
- "pyo3",
- "thiserror",
-]
-
-[[package]]
 name = "pyo3"
 version = "0.25.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -346,6 +335,17 @@ dependencies = [
  "pyo3-build-config",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "python-ripgrep"
+version = "0.1.0"
+dependencies = [
+ "grep",
+ "ignore",
+ "itertools",
+ "pyo3",
+ "thiserror",
 ]
 
 [[package]]

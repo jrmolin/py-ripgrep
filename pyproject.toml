@@ -3,7 +3,8 @@ requires = ["maturin>=1.9,<2.0"]
 build-backend = "maturin"
 
 [project]
-name = "py-rust"
+name = "python-ripgrep"
+author = "Jonathan Molinatto <jonathan.molinatto@gmail.com>"
 requires-python = ">=3.8"
 classifiers = [
     "Programming Language :: Rust",
