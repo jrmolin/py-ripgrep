@@ -49,16 +49,34 @@ impl From<FinderError> for PyErr {
     }
 }
 
+#[pyclass]
+struct Match {
+    line_number: u64,
+    r#match: String,
+}
+
+#[pymethods]
+impl Match {
+    #[getter]
+    fn line_number(&self) -> PyResult<u64> {
+        Ok(self.line_number)
+    }
+    #[getter]
+    fn r#match(&self) -> PyResult<String> {
+        Ok(self.r#match.clone())
+    }
+}
+
 #[derive(Default)]
 struct Results {
     files_matched: Vec<String>,
 
-    lines_matched: HashMap<String, Vec<String>>,
+    lines_matched: HashMap<String, Vec<Match>>,
 }
 
 struct ResultsSink {
     path: String,
-    matches: Vec<String>,
+    matches: Vec<Match>,
 }
 
 impl Results {
@@ -102,10 +120,9 @@ impl Sink for ResultsSink {
             None => return Err(FinderError::Unknown(format!("line numbers not configured"))),
         };
 
-        self.matches.push(format!("{lineno} :: {buffer}"));
+        self.matches.push(Match{line_number: lineno, r#match: buffer.to_string()});
         Ok(true)
     }
-
 }
     
 
@@ -264,7 +281,7 @@ impl Finder {
 
     // async arun
     // sync run
-    fn search(&self) -> PyResult<HashMap<String, Vec<String>>> {
+    fn search(&self) -> PyResult<HashMap<String, Vec<Match>>> {
         let finder = FinderInner::new(&self.dirs, &self.searches);
 
         let results = finder.search()?;
@@ -319,5 +336,6 @@ fn skip_git(d: &DirEntry) -> bool
 #[pymodule]
 fn py_rust(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<Finder>()?;
+    m.add_class::<Match>()?;
     Ok(())
 }
